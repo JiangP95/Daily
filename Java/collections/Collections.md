@@ -1,5 +1,6 @@
 # 概览
-![collection-overview.jpg](./collection-overview.jpg)
+![collection-overview.jpg](/.assets/collection-overview.jpg)
+
 
 ## 大致说明：
 
