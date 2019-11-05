@@ -127,6 +127,8 @@
     sudo chown root:root jdk-7u21-linux-i586.tar.gz
  
 # 文件权限管理
+	第一位 d 表示目录  - 表示文件
+    
     三种基本权限
     R           读         数值表示为4
     W          写         数值表示为2
