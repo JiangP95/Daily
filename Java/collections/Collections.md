@@ -37,6 +37,7 @@ ListIterator是专门为遍历List而存在的。
 - HashMap：16/2 
 - HashSet/TreeSet：同HashMap(基于HashMap实现，value为空Object) 
 - Hashtable：11/2 
+- Vector：10/2 或者指定capacityIncrement
 - WeakHashMap：同HashMap 
 - PriorityQueue：11/Double size if small; else grow by 50% 
 - StringBuilder：16/按需

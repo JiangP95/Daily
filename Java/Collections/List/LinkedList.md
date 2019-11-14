@@ -126,6 +126,7 @@
                                                 ", Size: "+size);
         Entry<E> e = header;
         // 获取index处的节点。
+  		// 加速动作
         // 若index < 双向链表长度的1/2,则从前先后查找;
         // 否则，从后向前查找。
         if (index < (size >> 1)) {
