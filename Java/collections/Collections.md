@@ -4,7 +4,7 @@
 
 ## 大致说明：
 
-看上面的框架图，先抓住它的主干，即Collection和Map。
+看上面的框架图，先抓住它的主干，即Collection和Map。 
 
 1. Collection是一个接口，是高度抽象出来的集合，它包含了集合的基本操作和属性。
   Collection包含了List和Set两大分支。
