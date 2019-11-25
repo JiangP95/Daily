@@ -113,7 +113,7 @@
     }
 
 ## resize(int newCapacity)
- // 重新调整HashMap的大小，newCapacity是调整后的单位
+ 	// 重新调整HashMap的大小，newCapacity是调整后的单位
     void resize(int newCapacity) {
         Entry[] oldTable = table;
         int oldCapacity = oldTable.length;
