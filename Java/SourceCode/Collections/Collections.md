@@ -7,10 +7,10 @@
 看上面的框架图，先抓住它的主干，即Collection和Map。 
 
 1. Collection是一个接口，是高度抽象出来的集合，它包含了集合的基本操作和属性。
-  Collection包含了List和Set两大分支。
+    Collection包含了List和Set两大分支。
   	+ List是一个有序的队列，每一个元素都有它的索引。第一个元素的索引值是0。
           List的实现类有LinkedList, ArrayList, Vector, Stack。
-    + Set是一个不允许有重复元素的集合。
+        + Set是一个不允许有重复元素的集合。
           Set的实现类有HastSet和TreeSet。HashSet依赖于HashMap，它实际上是通过	       HashMap实现的；TreeSet依赖于TreeMap，它实际上是通过TreeMap实现的。
 
 2. Map是一个映射接口，即key-value键值对。

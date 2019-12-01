@@ -1,4 +1,4 @@
-![img](/.assets/set.jpg)
+![img](../.assets/set.jpg)
 
 
 
