@@ -14,13 +14,13 @@
 
 (05) HashMap, Hashtable, TreeMap, WeakHashMap 都是“键值对”映射的实现类。
 
-　　[HashMap](http://www.cnblogs.com/skywang12345/p/3310835.html) 基于“拉链法”实现的散列表。非线程安全。
+　　HashMap基于“拉链法”实现的散列表。非线程安全。
 
-　　[Hashtable](http://www.cnblogs.com/skywang12345/p/3310887.html) 基于“拉链法”实现的散列表。线程安全。
+　　Hashtable基于“拉链法”实现的散列表。线程安全。
 
-　　[WeakHashMap](http://www.cnblogs.com/skywang12345/p/3311092.html) 基于“拉链法”实现的散列表，非线程安全。相比HashMap，WeakHashMap中的键是“弱键”，当“弱键”被GC回收时，它对应的键值对也会被从WeakHashMap中删除；而HashMap中的键是强键。
+　　WeakHashMap 基于“拉链法”实现的散列表，非线程安全。相比HashMap，WeakHashMap中的键是“弱键”，当“弱键”被GC回收时，它对应的键值对也会被从WeakHashMap中删除；而HashMap中的键是强键。
 
-　　[TreeMap](http://www.cnblogs.com/skywang12345/p/3310928.html) 有序的散列表，它是通过红黑树实现的。一般用于存储有序的映射。非线程安全
+　　TreeMap有序的散列表，它是通过红黑树实现的。一般用于存储有序的映射。非线程安全
 
 ## HashMap和Hashtable异同
 
