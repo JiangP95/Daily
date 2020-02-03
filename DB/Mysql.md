@@ -78,3 +78,4 @@
 | REPEATABLE READ（可重复读）  |      避免      | 避免           | 避免 | 避免       | 允许 |
 | READ COMMITTED （读已提交）  |      避免      | 允许           | 避免 | 允许       | 允许 |
 | READ UNCOMMITTED（读未提交） |      避免      | 允许           | 允许 | 允许       | 允许 |
+
