@@ -1,6 +1,6 @@
 # Map
 
-![img](../.assets/map.jpg)
+![img](../img/map.jpg)
 
 
 

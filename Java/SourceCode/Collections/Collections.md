@@ -1,5 +1,5 @@
 # 概览
-![collection-overview.jpg](./.assets/collection-overview.jpg)
+![collection-overview.jpg](./img/collection-overview.jpg)
 
 
 ## 大致说明：
@@ -29,15 +29,32 @@ ListIterator是专门为遍历List而存在的。
 
 有了上面的整体框架之后，我们接下来对每个类分别进行分析。
 
+# 总结
+
+|      |                   |                             描述                             | 线程安全 |      初始长度/扩容倍数      |
+| :--: | :---------------: | :----------------------------------------------------------: | :------: | :-------------------------: |
+| List |     ArryList      |                      数组队列，动态数组                      |    否    |           10/1.5            |
+|      |    LinkedList     |                           双向链表                           |    否    |             无              |
+|      |      Vector       |                      矢量队列，动态数组                      |    是    | 10/2或指定capacityIncrement |
+|      |       Stack       |                  栈，继承于Vector，先进后出                  |    是    | 10/2或指定capacityIncrement |
+| Map  |      HashMap      |            键值对散列表。 key，value都可以为null             |    否    |            16/2             |
+|      |     Hashtable     |            键值对散列表。key，value都不可以为null            |    是    |        11/容量*2 +1         |
+|      |      TreeMap      | 有序的散列表，通过红黑树实现。key不能为null，value可以为null |    否    |             无              |
+|      |    WeakHashMap    |             键值对散列表。key，value都可以为null             |    否    |            16/2             |
+|      | ConcurrentHashMap |     （java.util.concurrent中的类）key，value都不能为null     |    是    |                             |
+| Set  |      HastSet      |                  通过HashMap，元素是无序的                   |    否    |             无              |
+|      |      TreeSet      |                  通过TreeMap，元素是有序的                   |    否    |             无              |
+
 # 容器扩容
-	初始长度/扩容倍数 
-- ArrayList：10/1.5 
-- ArrayDeque：8/2 
-- BitSet：64/2 
-- HashMap：16/2 
-- HashSet/TreeSet：同HashMap(基于HashMap实现，value为空Object) 
-- Hashtable：11/2 
-- Vector：10/2 或者指定capacityIncrement
-- WeakHashMap：同HashMap 
-- PriorityQueue：11/Double size if small; else grow by 50% 
-- StringBuilder：16/按需
+> 初始长度/扩容倍数 
+>
+> - ArrayList：10/1.5 
+> - Vector：10/2 或者指定capacityIncrement
+> - ArrayDeque：8/2 
+> - BitSet：64/2 
+> - HashMap：16/2 
+> - Hashtable：11/2 
+> - HashSet/TreeSet：同HashMap(基于HashMap实现，value为空Object) 
+> - WeakHashMap：同HashMap 
+> - PriorityQueue：11/Double size if small; else grow by 50% 
+> - StringBuilder：16/按需

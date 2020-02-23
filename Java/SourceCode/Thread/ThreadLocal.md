@@ -1,14 +1,23 @@
-![img](./.assets/threadlocal.png)
+![img](./img/threadlocal.png)
+
+
+
+```
+储存：ThreadLocal.ThreadLocalMap 对象
+key：ThreadLocal对象本身
+value: 需要储存的值
+```
+
+
 
 # 1. 对象结构：
 
-```
+```java
 public class ThreadLocal{
-
     public void set(T value) {
        //获取当前线程
        Thread t = Thread.currentThread();
-       获取线程中的map对象
+       //获取线程中的map对象
        ThreadLocalMap map = getMap(t);
        if (map != null)
         	// key为当前ThreadLocal对象
@@ -16,6 +25,11 @@ public class ThreadLocal{
         else
         	// map初始化
             createMap(t, value);
+    }
+    
+    // Thread 中的ThreadLocalMap
+    ThreadLocalMap getMap(Thread t) {
+        return t.threadLocals;
     }
 
     public T get() { 
@@ -115,6 +129,7 @@ public class ThreadLocal{
 }
 
 public class Thread{
+    //线程中的ThreadLocalMap对象  map对象
 	ThreadLocal.ThreadLocalMap threadLocals = null;
 }
 ```

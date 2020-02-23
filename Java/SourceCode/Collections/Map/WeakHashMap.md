@@ -42,64 +42,38 @@
 
    ## expungeStaleEntries()
 
-   ​		// 清空table中无用键值对。原理如下： 
+   ```java
+// 清空table中无用键值对。原理如下： 
+   		// (01) 当WeakHashMap中某个“弱引用的key”由于没有再被引用而被GC收回时， 
+		//   被回收的“该弱引用key”也被会被添加到"ReferenceQueue(queue)"中。 
+   		// (02) 当我们执行expungeStaleEntries时， 
+		//   就遍历"ReferenceQueue(queue)"中的所有key 
+   		//   然后就在“WeakReference的table”中删除与“ReferenceQueue(queue)中key”对应的键值对 
+		private void expungeStaleEntries() { 
+   		         Entry<K,V> e; 
+				 while ( (e = (Entry<K,V>) 
+   						queue.poll()) != null) { 
+						int h = e.hash; 
+   						int i = indexFor(h, table.length); 
+						Entry<K,V> prev = table[i]; 
+   						Entry<K,V> p = prev; 
+						while (p != null) { 
+   						Entry<K,V> next = p.next; 
+							if (p == e) { 
+   								if (prev == e) 
+									table[i] = next; 
+   								else 
+									prev.next = next; 
+   								e.next = null;  // Help GC 
+								e.value = null; //  "   " 
+   								size--; 
+								break; 
+   							} 
+						prev = p; 
+   						p = next; 
+				} 
+   		} 
+	}
+   ```
 
-   ​		// (01) 当WeakHashMap中某个“弱引用的key”由于没有再被引用而被GC收回时， 
-
-   ​		//   被回收的“该弱引用key”也被会被添加到"ReferenceQueue(queue)"中。 
-
-   ​		// (02) 当我们执行expungeStaleEntries时， 
-
-   ​		//   就遍历"ReferenceQueue(queue)"中的所有key 
-
-   ​		//   然后就在“WeakReference的table”中删除与“ReferenceQueue(queue)中key”对应的键值对 
-
-   ​		private void expungeStaleEntries() { 
-
-   ​		         Entry<K,V> e; 
-
-   ​				 while ( (e = (Entry<K,V>) 
-
-   ​						queue.poll()) != null) { 
-
-   ​						int h = e.hash; 
-
-   ​						int i = indexFor(h, table.length); 
-
-   ​						Entry<K,V> prev = table[i]; 
-
-   ​						Entry<K,V> p = prev; 
-
-   ​						while (p != null) { 
-
-   ​							Entry<K,V> next = p.next; 
-
-   ​							if (p == e) { 
-
-   ​								if (prev == e) 
-
-   ​									table[i] = next; 
-
-   ​								else 
-
-   ​									prev.next = next; 
-
-   ​								e.next = null;  // Help GC 
-
-   ​								e.value = null; //  "   " 
-
-   ​								size--; 
-
-   ​								break; 
-
-   ​							} 
-
-   ​						prev = p; 
-
-   ​						p = next; 
-
-   ​				} 
-
-   ​		} 
-
-   ​	}
+   
