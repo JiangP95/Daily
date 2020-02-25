@@ -1,19 +1,32 @@
 # HashMap
 > 1. 散列表，键值对（Key-Value）映射
+>
 > 2. 线程非安全
+>
 > 3. Key，Value都可以为null
+>
 > 4. 映射不是有序的
+>
 > 5. 初始容量；加载因子：默认值0.75
 > 	当hash表的条目数超过  加载因子*当前容量
 >     时，则对hash表进行扩容操作
+>    
 > 6. hashMap将key为null的元素放在table[0]位置 
+>
 > 7. 重要属性：
 > 	Entry[] table：储存键值对，Entry实际上就是一个单向链表
 >     size：hashmap的大小
 >     threshold：阈值，用于判断是否需要调整hashmap的容量。threshold = 当前容量*加载因子
 >     loadFactor：加载因子
 >     modCount：实现fail-fast机制，也是hashmap被改变的次数
+>    
 > 8. HashMap就是一个散列表，它是通过“拉链法”解决哈希冲突的
+>
+> 9. 线程不安全：
+>
+>    a. 多线程hash值相同时，会引起值覆盖
+>
+>    b. 多线程同时扩容时，会引起环装链表，get的时候则会引起死循环
 
  ## get(Object key)
 ```java
