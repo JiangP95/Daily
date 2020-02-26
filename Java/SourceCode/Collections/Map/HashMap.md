@@ -179,3 +179,9 @@ void transfer(Entry[] newTable) {
     }
 }
 ```
+
+
+
+# JDK1.8
+
+JDK1.8中如果链表长度到达阀值(默认是8)，就会将链表转换成红黑二叉树
