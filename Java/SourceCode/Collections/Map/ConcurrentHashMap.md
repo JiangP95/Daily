@@ -6,7 +6,7 @@
 
 
 
-> ConcurrentHashMap结构分为两部分：segment数组，一旦初始化以后，不可扩容；segment中的内部数组和链表，内部数组可扩容
+> ConcurrentHashMap结构分为两部分：**segment数组，一旦初始化以后，不可扩容**；segment中的内部数组和链表，**内部数组可扩容**
 >
 > concurrencyLevel： 并行级别、并发数、Segment 数，默认值是16，也就是说 ConcurrentHashMap 有 16 个 Segments，所以理论上，这个时候，最多可以同时支持 16 个线程并发写，只要它们的操作分别分布在不同的 Segment 上。
 
@@ -15,6 +15,10 @@
 ![concurrentHashMap-1.png](../img/concurrentHashMap-2.png)
 
 >JDK1.8之后ConcurrentHashMap结构和JDK1.8之后的HashMap基本上一样，也是保持着数组+链表+红黑树的结构，不同的是，ConcurrentHashMap需要保证线程安全性
+>
+>数组长度超过8之后，转为红黑树结构   
+>
+>数据查询复杂的 O(n)，红黑树查询时间复杂度 O(logN)
 
 ```java
 
