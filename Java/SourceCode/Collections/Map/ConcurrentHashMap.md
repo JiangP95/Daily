@@ -138,3 +138,182 @@
     }
 ```
 
+>**扩容**
+>
+>putVal时
+>
+>1. 首先是根据key的hashCode做一次重哈希（进一步减少哈希碰撞）
+>
+>2. 先判断table为空，则初始化Map，否则：
+>
+>3. 根据hashCode取模定位到table中的某个节点f，如果f为空，则新创建一个节点，使用cas方式更新到数组的f节点上，插入结束，否则：
+>
+>4. 若f是转移转移节点，说明Map正在扩容，则调用helpTransfer协助转移，否则：
+>
+>5. 锁定节点f（通过synchronized加锁）
+>
+>6. 节点f锁定成功后判断节点f类型，如果f是链表节点，则直接插入到链表底端（key不存在的话），如果节点f是红黑树节点，则按照二叉搜索树的方式插入节点，并调整树结构使其满足红黑规则
+>
+>7. 最后调用addCount更新Map中的节点计数
+>
+>**helpTransfer**主要用于通过计算来验证Map是否需要协助扩容，如果Map正在扩容且扩容未结束则协助扩容，并通过transfer执行扩容过程
+>
+>**transfer**方法为实际的扩容实现，实现过程有些复杂，
+>
+>1. 第一个扩容线程进来后创建nextTable数组，并设置transferIndex；
+>
+>2. 线程（第一个或其他）通过transferIndex-stride（扩容步长）来领取一个扩容子任务，transferIndex减到0说明所有子任务领取完成；
+>
+>3. 线程领取到扩容子任务后设置当前处理子任务的下界并更新当前处理节点所在的索引位置；
+>
+>4. 对子任务中的每个节点，扩容线程**从后向前**依次判断该节点是否已经转移，如果没有转移，则对该节点进行加锁，并且把节点对应的链表或红黑树转移到新数组nextTable中去；
+>
+>5. 如果线程处理的节点索引已经到达子任务的下界，则子任务执行结束，并尝试去领取新的子任务，若领取不到再判断当前线程是否是最后一个扩容线程，若是则最后扫描一遍数组，执行清理工作，否则直接退出。
+
+```java
+/**
+     * Moves and/or copies the nodes in each bin to new table. See
+     * above for explanation.
+     */
+    private final void transfer(Node<K,V>[] tab, Node<K,V>[] nextTab) {
+        int n = tab.length, stride;
+        //根据table的长度及cpu核数计算转移任务步长
+        if ((stride = (NCPU > 1) ? (n >>> 3) / NCPU : n) < MIN_TRANSFER_STRIDE) // 计算转移步长并判断是否小于最小转移步长
+            stride = MIN_TRANSFER_STRIDE; // subdivide range
+        if (nextTab == null) {            // 第一个扩容线程进来需要初始化nextTable
+            try {
+                @SuppressWarnings("unchecked")
+                Node<K,V>[] nt = (Node<K,V>[])new Node<?,?>[n << 1];
+                nextTab = nt;
+            } catch (Throwable ex) {      // try to cope with OOME
+                sizeCtl = Integer.MAX_VALUE;
+                return;
+            }
+            nextTable = nextTab;
+            transferIndex = n;
+        }
+        int nextn = nextTab.length;
+        ForwardingNode<K,V> fwd = new ForwardingNode<K,V>(nextTab);
+        boolean advance = true; 
+        boolean finishing = false; // to ensure sweep before committing nextTab
+        for (int i = 0, bound = 0;;) {
+            Node<K,V> f; int fh;
+            while (advance) {
+                int nextIndex, nextBound;
+                if (--i >= bound || finishing) //当前索引已经走到了本次扩容子任务的下界，子任务转移结束
+                    advance = false;
+                else if ((nextIndex = transferIndex) <= 0) {//任务转移完成
+                    i = -1;
+                    advance = false;
+                }
+               //通过cas方式尝试获取一个转移任务（transferIndex - 转移步长stride），获取成功后得到处理的下界及当前索引
+                else if (U.compareAndSwapInt
+                         (this, TRANSFERINDEX, nextIndex,
+                          nextBound = (nextIndex > stride ?
+                                       nextIndex - stride : 0))) {
+                    bound = nextBound;  // 更新当前子任务的下界
+                    i = nextIndex - 1;  // 更新当前index位置  
+                    advance = false;
+                }
+            }
+            if (i < 0 || i >= n || i + n >= nextn) { // 扩容结束
+                int sc;
+                if (finishing) {             // 最后一个出去的线程：更新table指针及sizeCtl值
+                    nextTable = null;
+                    table = nextTab;     // 指向扩容后的数组
+                    sizeCtl = (n << 1) - (n >>> 1);  //sizeCtl更新为最新的扩容阈值（2n - 0.5n = 1.5n =  2n * 0.75），移位实现保证高效率
+                    return;
+                }
+                // sizeCtl减1，表示减少一个扩容线程
+                if (U.compareAndSwapInt(this, SIZECTL, sc = sizeCtl, sc - 1)) {
+                    // 判断是否是最后一个扩容线程，如果不是则直接退出，由于第一个线程进来时把扩容戳rs左移16位+2更新到sizeCtl，所以如果是最后一个线程的话，sizeCtl -2 应该等于rs左移16位
+                    if ((sc - 2) != resizeStamp(n) << RESIZE_STAMP_SHIFT)
+                        return;
+                    finishing = advance = true;//如果是最后一个线程，则结束标志更新为真，并且在重新检查一遍数组
+                    i = n; // recheck before commit
+                }
+            }
+            else if ((f = tabAt(tab, i)) == null)    // 当前桶节点为空，设置为转移成转移节点
+                advance = casTabAt(tab, i, null, fwd);
+            else if ((fh = f.hash) == MOVED)   // 该桶节点已经被转移
+                advance = true; // already processed
+            else {
+                synchronized (f) {         // 获取该节点的锁
+                    if (tabAt(tab, i) == f) {// 获取锁之后再次验证是否被其他线程修改过
+                        Node<K,V> ln, hn;
+                        if (fh >= 0) {        // 节点HasCode大于0 代表该节点为链表节点
+                            // 由于数组长度n为2的幂次方，所以当数组长度增加到2n时，原来hash到table中i的数据节点在长度为2n的table中要么在低位nextTab[i]处，要么在高位nextTab[n+i]处，具体在哪个位置与(fh & n)的计算结果有关
+                            int runBit = fh & n;
+                            Node<K,V> lastRun = f;
+                            // 此处循环的目的是找到链表中最后一个从低索引位置变到高索引位置或者从高索引位置变到低索引位置的节点lastRun，从lastRun节点到链表的尾节点可根据runBit直接插入到新数组nextTable的节点中，其目的是尽量减少新创建节点数量，直接更新指针位置
+                            for (Node<K,V> p = f.next; p != null; p = p.next) {
+                                int b = p.hash & n;
+                                if (b != runBit) {
+                                    runBit = b;
+                                    lastRun = p;
+                                }
+                            }
+                            if (runBit == 0) {
+                                ln = lastRun;
+                                hn = null;
+                            }
+                            else {
+                                hn = lastRun;
+                                ln = null;
+                            }
+                           // 对于lastRun之前的链表节点，根据hashCode&n可确定即将转移到nextTable中的低索引位置节点（nextTab[i]）还是高索引位置节点（nextTab[i + n]），并形成两个新的链表
+                            for (Node<K,V> p = f; p != lastRun; p = p.next) {
+                                int ph = p.hash; K pk = p.key; V pv = p.val;
+                                if ((ph & n) == 0)
+                                    ln = new Node<K,V>(ph, pk, pv, ln);
+                                else
+                                    hn = new Node<K,V>(ph, pk, pv, hn);
+                            }
+                            // 使用cas方式更新两个链表到新数组nextTable中，并且把原来的table节点i中的数值变为转移节点
+                            setTabAt(nextTab, i, ln);
+                            setTabAt(nextTab, i + n, hn);
+                            setTabAt(tab, i, fwd);
+                            advance = true;
+                        }
+                        else if (f instanceof TreeBin) {   //该节点为二叉搜索数节点（红黑树）
+                            TreeBin<K,V> t = (TreeBin<K,V>)f;
+                            TreeNode<K,V> lo = null, loTail = null;
+                            TreeNode<K,V> hi = null, hiTail = null;
+                            int lc = 0, hc = 0;
+                            for (Node<K,V> e = t.first; e != null; e = e.next) {
+                                int h = e.hash;
+                                TreeNode<K,V> p = new TreeNode<K,V>
+                                    (h, e.key, e.val, null, null);
+                                if ((h & n) == 0) {
+                                    if ((p.prev = loTail) == null)
+                                        lo = p;
+                                    else
+                                        loTail.next = p;
+                                    loTail = p;
+                                    ++lc;
+                                }
+                                else {
+                                    if ((p.prev = hiTail) == null)
+                                        hi = p;
+                                    else
+                                        hiTail.next = p;
+                                    hiTail = p;
+                                    ++hc;
+                                }
+                            }
+                            ln = (lc <= UNTREEIFY_THRESHOLD) ? untreeify(lo) :
+                                (hc != 0) ? new TreeBin<K,V>(lo) : t;
+                            hn = (hc <= UNTREEIFY_THRESHOLD) ? untreeify(hi) :
+                                (lc != 0) ? new TreeBin<K,V>(hi) : t;
+                            setTabAt(nextTab, i, ln);
+                            setTabAt(nextTab, i + n, hn);
+                            setTabAt(tab, i, fwd);
+                            advance = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+```
+
