@@ -1,3 +1,7 @@
+# Redis
+
+>key-value结构的内存数据库。支持string，list，set，zset(sortedset 有序集合)，hash 等数据类型
+
 **常用的数据结构：**
 
 > 字符串(String)，散列/哈希(hash)，列表(list)，无序集合类型(set)，有序集合类型(sorted set)
