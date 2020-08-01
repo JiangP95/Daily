@@ -2,11 +2,11 @@
 
 > OCR（Optical Character Recognition，光学字符识别）
 >
-> OCR技术的大致流程都差不多，但需要根据具体情况的不同，做出些许调整，但最终的目的不变，即**检测出待识别文本的位置**以及**分割单个文本**
+> OCR技术实现的关键目标在于，**检测出待识别文本的位置**并且**分割成单个文本**；随后进行**模板匹配**，推测出待识别项是属于哪一个分类，即是什么字符；最后可以做**先验知识校验即结果矫正**以提高最后的识别准确率
 
 -----
 
-### 以下，以一个简单的验证码识别为例，来大致介绍OCR的整个过程
+### 以下，以一张验证码图片识别为例，来大致介绍OCR的整个过程
 
 需要识别的图片
 
@@ -18,7 +18,7 @@
 
 2. 图像预处理（图像缩放，裁剪，旋转；边缘检测；倾斜矫正；特征提取；图像去噪）
 
-   > **目的:**在图片正式检测识别前，尽可能高的提升图片的质量。
+   > **目的:** 在图片正式检测识别前，尽可能高的提升图片的质量。
    >
    > 自然场景下，例如身份证，签证，护照等证件的识别，需要用户拍照上传。用户拍照会有角度偏差，光线影响等，则需要做预处理操作。这个过程非常重要，直接影响后续的操作，好的预处理操作，能让后面的步骤变得更简单，最终的识别结果也会更加准确。
    >
@@ -40,39 +40,39 @@
    >
    >1. 对图像**二值化**处理，以及去除影响最大的网格噪声
    >
-   >   读取图片，对所有像素聚合，可以发现，网格像素值与字体像素值有明显差异，网格背景的像素值为211 , 字体像素值170 (直接使用windows自带的画图工具，也可以看到像素值的差异) 。 这里可以使用**全局二值化**直接将网格噪声去除，二值化阈值取 190，  像素值小于 190 的置为0，像素值大于190的置为255
+   >  读取图片，对所有像素聚合，可以发现，网格像素值与字体像素值有明显差异，网格背景的像素值为211 , 字体像素值170 (直接使用windows自带的画图工具，也可以看到像素值的差异) 。 这里可以使用**全局二值化**直接将网格噪声去除，二值化阈值取 190，  像素值小于 190 的置为0，像素值大于190的置为255
    >
-   >   ![2-threshold.jpg](./img-ocr-introduce/2-threshold.jpg)
+   >  ![2-threshold.jpg](./img-ocr-introduce/2-threshold.jpg)
    >
    >2. 使用**连通域分析**，去除椒盐噪声
    >
-   >   连通域： 指图像中具有相同像素值且位置相邻的前景像素点组成的图像区域
+   >  连通域： 指图像中具有相同像素值且位置相邻的前景像素点组成的图像区域
    >
-   >   这里使用到的连通域分析算法：[连通域算法](./常用算法/连通域算法.md)
+   >  这里使用到的连通域分析算法：[连通域算法](./常用算法/连通域算法.md)
    >
-   >   取最大的6个连通域，即是我们要找的6个字符的位置，取连通域的外接矩形，画出来如下
+   >  取最大的6个连通域，即是我们要找的6个字符的位置，取连通域的外接矩形，画出来如下
    >
-   >   ![3-rect.jpg](./img-ocr-introduce/3-rect.jpg)
+   >  ![3-rect.jpg](./img-ocr-introduce/3-rect.jpg)
    >
-   >   （在这个场景下，有少部分字符会连在一起，需要用像素按X轴投影累加值计算，做字符的分割，字符连接处的像素值往往有很大的突变。）
+   >  （在这个场景下，有少部分字符会连在一起，需要用像素按X轴投影累加值计算，做字符的分割，字符连接处的像素值往往有很大的突变。）
    >
    >3. 按矩形位置，切割出待识别的字符
    >
-   >   ![4-code-0.jpg](./img-ocr-introduce/4-code-0.jpg)	![5-code-1.jpg](./img-ocr-introduce/5-code-1.jpg)	![6-code-2.jpg](./img-ocr-introduce/6-code-2.jpg)	![7-code-3.jpg](./img-ocr-introduce/7-code-3.jpg)	![8-code-4.jpg](./img-ocr-introduce/8-code-4.jpg)	![9-code-5.jpg](./img-ocr-introduce/9-code-5.jpg)
+   >  ![4-code-0.jpg](./img-ocr-introduce/4-code-0.jpg)	![5-code-1.jpg](./img-ocr-introduce/5-code-1.jpg)	![6-code-2.jpg](./img-ocr-introduce/6-code-2.jpg)	![7-code-3.jpg](./img-ocr-introduce/7-code-3.jpg)	![8-code-4.jpg](./img-ocr-introduce/8-code-4.jpg)	![9-code-5.jpg](./img-ocr-introduce/9-code-5.jpg)
    >
    >4. 去除剩余噪声
    >
-   >   截取出来的图片，还有很多小的噪声，使用第二个步骤中的连通域分析，保留最大的连通域，将较小的连通域的像素值全部置为0 
+   >  截取出来的图片，还有很多小的噪声，使用第二个步骤中的连通域分析，保留最大的连通域，将较小的连通域的像素值全部置为0 
    >
-   >   ![10-code-clean-0.jpg](./img-ocr-introduce/10-code-clean-0.jpg)	![11-code-clean-1.jpg](./img-ocr-introduce/11-code-clean-1.jpg)	![12-code-clean-2.jpg](./img-ocr-introduce/12-code-clean-2.jpg)	![13-code-clean-3.jpg](./img-ocr-introduce/13-code-clean-3.jpg)	![14-code-clean-4.jpg](./img-ocr-introduce/14-code-clean-4.jpg)	![15-code-clean-5.jpg](./img-ocr-introduce/15-code-clean-5.jpg)
+   >  ![10-code-clean-0.jpg](./img-ocr-introduce/10-code-clean-0.jpg)	![11-code-clean-1.jpg](./img-ocr-introduce/11-code-clean-1.jpg)	![12-code-clean-2.jpg](./img-ocr-introduce/12-code-clean-2.jpg)	![13-code-clean-3.jpg](./img-ocr-introduce/13-code-clean-3.jpg)	![14-code-clean-4.jpg](./img-ocr-introduce/14-code-clean-4.jpg)	![15-code-clean-5.jpg](./img-ocr-introduce/15-code-clean-5.jpg)
    >
    >5. 统一缩放
    >
-   >   不同场景下的图片大小不一，在下一步的字符匹配中，需要统一字符的大小，进行字符匹配。这里缩放成40*40的大小
+   >  不同场景下的图片大小不一，在下一步的字符匹配中，需要统一字符的大小，进行字符匹配。这里缩放成40*40的大小
    >
-   >   ![16-code-result-0.jpg](./img-ocr-introduce/16-code-result-0.jpg)	![17-code-result-1.jpg](./img-ocr-introduce/17-code-result-1.jpg)	![18-code-result-2.jpg](./img-ocr-introduce/18-code-result-2.jpg)	![19-code-result-3.jpg](./img-ocr-introduce/19-code-result-3.jpg)	![20-code-result-4.jpg](./img-ocr-introduce/20-code-result-4.jpg)	![21-code-result-5.jpg](./img-ocr-introduce/21-code-result-5.jpg)
+   >  ![16-code-result-0.jpg](./img-ocr-introduce/16-code-result-0.jpg)	![17-code-result-1.jpg](./img-ocr-introduce/17-code-result-1.jpg)	![18-code-result-2.jpg](./img-ocr-introduce/18-code-result-2.jpg)	![19-code-result-3.jpg](./img-ocr-introduce/19-code-result-3.jpg)	![20-code-result-4.jpg](./img-ocr-introduce/20-code-result-4.jpg)	![21-code-result-5.jpg](./img-ocr-introduce/21-code-result-5.jpg)
    >
-   >   
+   >  
 
 4. 字符匹配
 
@@ -98,7 +98,7 @@
    >
    > ​					运算规则：0⊕0=0，1⊕0=1，0⊕1=1，1⊕1=0；
    >
-   > ​					所有像素点的运算值，计算总和，运算值总和越小，则说明待识别字符与模板的相似度越					高，相似度最高的那一项即是字符匹配的值。
+   > ​					所有像素点的运算值，计算总和，运算值总和越小，则说明待识别字符与模板的相似度越高，相似度最高的那一项即是字符匹配的值。
    >
    > 深度学习：基于神经网络的的字符分类。
    >
@@ -119,3 +119,30 @@
    > 对于不同的场景，有不同的后处理方式。比如说，对于身份证识别中的 *身份证号* 模板匹配中，*身份证号*是有一定规律的，只会存在数字或者X字母；在不同的籍贯下，数字也有一定的规律；在者，有些公司有大量的实名数据，可以将识别结果与识别数据对照，进行识别结果的校验，矫正匹配错误的结果。
 
 6. 结果输出
+
+## 常见问题
+
+> 以上的识别过程是一个标准化的OCR流程，上面的例子的处理过程是假设不会存在**一些意外的情况下**操作的。
+>
+> 在自然场景下，用户拍出来的一定会有意想不到的情况。而这些意想不到的情况，则是OCR真正的**难点**所在，这需要更多的**图形学操作**，来处理自然场景下图片。目标：以图形学操作，寻找**真实特征**，排除干扰噪声（一切不是目标识别项的位置皆是噪声）
+>
+> 比如以**签证识别**为例
+>
+> 1. 硬变形 (图片弯曲，导致字体变形)
+>
+>    ![example-1](./img-ocr-introduce/example-1.jpg)
+>
+> 2. 阴影，光线差异大（导致二值化处理困难，可能会大面积“变黑”）
+>
+> ![example-2](./img-ocr-introduce/example-2.jpg)
+>
+> 3. 遮挡 （导致某些待识别项无法识别）
+>
+> ![example-3](./img-ocr-introduce/example-3.jpg)
+>
+> 还有几种场景的场景，比如 **软变形**（图片扭曲，折痕），**曝光**（图片有明显的曝光点），这里不一一列举了。
+
+## 总结
+
+OCR无法使用工程上的**因果**关系去介绍，自然场景下的*意外* ，使所有的操作变的不**必然**，更多的在于**实践**，不断的优化处理算法，以尽可能的提高识别准确率。
+
