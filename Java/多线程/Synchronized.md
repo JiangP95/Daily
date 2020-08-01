@@ -1,4 +1,5 @@
 >- 修饰实例方法，作用于当前对象实例加锁，进入同步代码前要获得当前对象实例的锁
+>
 >  ```java
 >  public synchronized void increase() {
 >      i++;
