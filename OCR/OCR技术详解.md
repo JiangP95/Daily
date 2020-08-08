@@ -3,6 +3,8 @@
 > OCR（Optical Character Recognition，光学字符识别）
 >
 > OCR技术实现的关键目标在于，**检测出待识别文本的位置**并且**分割成单个文本**；随后进行**模板匹配**，推测出待识别项是属于哪一个分类，即是什么字符；最后可以做**先验知识校验及结果矫正**以提高最后的识别准确率
+>
+> 识别过程： **预处理**	->	**检测**	->	**模板匹配**	->	**后处理**
 
 -----
 
@@ -18,7 +20,7 @@
 
 2. 图像预处理（图像缩放，裁剪，旋转；边缘检测；倾斜矫正；特征提取；图像去噪）
 
-   > **目的:** 在图片正式检测识别前，尽可能高的提升图片的质量。
+   > **目的**:  在图片正式检测识别前，尽可能高的提升图片的质量。
    >
    > 自然场景下，例如身份证，签证，护照等证件的识别，需要用户拍照上传。用户拍照会有角度偏差，光线影响等，则需要做预处理操作。这个过程非常重要，直接影响后续的操作，好的预处理操作，能让后面的步骤变得更简单，最终的识别结果也会更加准确。
    >
@@ -28,7 +30,7 @@
 
 3. 文本检测与字符分割
 
-   > **目的:**将图像中的待识别文本，单个字符切割开来
+   > **目的**: 将图像中的待识别文本，单个字符切割开来
    >
    > 传统方法：特征工程，基于opencv的图像特征处理
    >
@@ -58,25 +60,25 @@
    >
    >3. 按矩形位置，切割出待识别的字符
    >
-   >  ![4-code-0.jpg](./img-ocr-introduce/4-code-0.jpg)	![5-code-1.jpg](./img-ocr-introduce/5-code-1.jpg)	![6-code-2.jpg](./img-ocr-introduce/6-code-2.jpg)	![7-code-3.jpg](./img-ocr-introduce/7-code-3.jpg)	![8-code-4.jpg](./img-ocr-introduce/8-code-4.jpg)	![9-code-5.jpg](./img-ocr-introduce/9-code-5.jpg)
+   >     ![4-code-0.jpg](./img-ocr-introduce/4-code-0.jpg)		![5-code-1.jpg](./img-ocr-introduce/5-code-1.jpg)		![6-code-2.jpg](./img-ocr-introduce/6-code-2.jpg)		![7-code-3.jpg](./img-ocr-introduce/7-code-3.jpg)		![8-code-4.jpg](./img-ocr-introduce/8-code-4.jpg)		![9-code-5.jpg](./img-ocr-introduce/9-code-5.jpg)
    >
    >4. 去除剩余噪声
    >
    >  截取出来的图片，还有很多小的噪声，使用第二个步骤中的连通域分析，保留最大的连通域，将较小的连通域的像素值全部置为0 
    >
-   >  ![10-code-clean-0.jpg](./img-ocr-introduce/10-code-clean-0.jpg)	![11-code-clean-1.jpg](./img-ocr-introduce/11-code-clean-1.jpg)	![12-code-clean-2.jpg](./img-ocr-introduce/12-code-clean-2.jpg)	![13-code-clean-3.jpg](./img-ocr-introduce/13-code-clean-3.jpg)	![14-code-clean-4.jpg](./img-ocr-introduce/14-code-clean-4.jpg)	![15-code-clean-5.jpg](./img-ocr-introduce/15-code-clean-5.jpg)
+   > ​	 ![10-code-clean-0.jpg](./img-ocr-introduce/10-code-clean-0.jpg)		![11-code-clean-1.jpg](./img-ocr-introduce/11-code-clean-1.jpg)		![12-code-clean-2.jpg](./img-ocr-introduce/12-code-clean-2.jpg)		![13-code-clean-3.jpg](./img-ocr-introduce/13-code-clean-3.jpg)		![14-code-clean-4.jpg](./img-ocr-introduce/14-code-clean-4.jpg)		![15-code-clean-5.jpg](./img-ocr-introduce/15-code-clean-5.jpg)
    >
    >5. 统一缩放
    >
    >  不同场景下的图片大小不一，在下一步的字符匹配中，需要统一字符的大小，进行字符匹配。这里缩放成40*40的大小
    >
-   >  ![16-code-result-0.jpg](./img-ocr-introduce/16-code-result-0.jpg)	![17-code-result-1.jpg](./img-ocr-introduce/17-code-result-1.jpg)	![18-code-result-2.jpg](./img-ocr-introduce/18-code-result-2.jpg)	![19-code-result-3.jpg](./img-ocr-introduce/19-code-result-3.jpg)	![20-code-result-4.jpg](./img-ocr-introduce/20-code-result-4.jpg)	![21-code-result-5.jpg](./img-ocr-introduce/21-code-result-5.jpg)
+   > ​	 ![16-code-result-0.jpg](./img-ocr-introduce/16-code-result-0.jpg)		![17-code-result-1.jpg](./img-ocr-introduce/17-code-result-1.jpg)		![18-code-result-2.jpg](./img-ocr-introduce/18-code-result-2.jpg) 	![19-code-result-3.jpg](./img-ocr-introduce/19-code-result-3.jpg)		![20-code-result-4.jpg](./img-ocr-introduce/20-code-result-4.jpg) 	![21-code-result-5.jpg](./img-ocr-introduce/21-code-result-5.jpg)
    >
    >  
 
 4. 字符匹配
 
-   > **目的:**将切割好的字符文本与事先准备的模板进行匹配 （某些场景下也可以是多个字符一起匹配）
+   > **目的**: 将切割好的字符文本与事先准备的模板进行匹配 （某些场景下也可以是多个字符一起匹配）
    >
    > 传统方法：模板匹配
    >
@@ -114,7 +116,7 @@
 
    > 相似度分析，先验知识校验
 
-   > 后处理的目的，是为了在模板匹配后，根据先验知识，对匹配结果进行校正，提高最后的识别准确率。
+   > **目的**: 	为了在模板匹配后，根据先验知识，对匹配结果进行校正，提高最后的识别准确率。
    >
    > 对于不同的场景，有不同的后处理方式。比如说，对于身份证识别中的 *身份证号* 模板匹配中，*身份证号*是有一定规律的，只会存在数字或者X字母；在不同的籍贯下，数字也有一定的规律；在者，有些公司有大量的实名数据，可以将识别结果与识别数据对照，进行识别结果的校验，矫正匹配错误的结果。
 
@@ -145,4 +147,16 @@
 ## 总结
 
 OCR无法使用工程上的**因果**关系去介绍，自然场景下的*意外* ，使所有的操作变的**不必然**，更多的在于**实践**，不断的优化处理算法，以尽可能的提高识别准确率。
+
+
+
+**OCR技术使用到的技术,算法过程 介绍**
+
+[OCR技术介绍](./ocr/OCR技术介绍.md)
+
+
+
+
+
+
 
