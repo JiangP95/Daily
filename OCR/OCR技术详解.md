@@ -70,7 +70,7 @@
    >
    >5. 统一缩放
    >
-   >  不同场景下的图片大小不一，在下一步的字符匹配中，需要统一字符的大小，进行字符匹配。这里缩放成40*40的大小
+   >  不同场景下的图片大小不一，在下一步的字符匹配中，需要统一字符图片的大小，进行字符匹配。这里缩放成40*40的大小
    >
    > ​	 ![16-code-result-0.jpg](./img-ocr-introduce/16-code-result-0.jpg)		![17-code-result-1.jpg](./img-ocr-introduce/17-code-result-1.jpg)		![18-code-result-2.jpg](./img-ocr-introduce/18-code-result-2.jpg) 	![19-code-result-3.jpg](./img-ocr-introduce/19-code-result-3.jpg)		![20-code-result-4.jpg](./img-ocr-introduce/20-code-result-4.jpg) 	![21-code-result-5.jpg](./img-ocr-introduce/21-code-result-5.jpg)
    >
